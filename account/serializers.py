@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 
 from account.utils import send_activation_code
+from main.serializers import FavoriteSerializer, LikeSerializer
 
 MyUser = get_user_model()
 
@@ -22,7 +23,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return validate_data
 
     def create(self, validate_data):
-        """ This function is called when self.save() method is called"""
         email = validate_data.get('email')
         username = validate_data.get('username')
         password = validate_data.get('password')
@@ -51,3 +51,20 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MyUser
+        fields = ('email', 'username',)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        action = self.context.get('action')
+        print(action)
+        if action != 'list':
+            representation['favorites'] = FavoriteSerializer(instance.favorites.filter(favorite=True),
+                                                             many=True, context=self.context).data
+            representation['likes'] = LikeSerializer(instance.likes.filter(like=True),
+                                                     many=True, context=self.context).data
+        return representation

@@ -1,15 +1,18 @@
+import mixin as mixin
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
 # Create your views here.
-from rest_framework import status
+from rest_framework import status, mixins, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from account.serializers import RegisterSerializer, LoginSerializer
+from account.serializers import RegisterSerializer, LoginSerializer, UserSerializer
+
+MyUser = get_user_model()
 
 
 class RegisterView(APIView):
@@ -23,7 +26,6 @@ class RegisterView(APIView):
 
 class ActivateView(APIView):
     def get(self, request, activation_code):
-        MyUser = get_user_model()
         user = get_object_or_404(MyUser, activation_code=activation_code)
         user.is_active = True
         user.activation_code = ''
@@ -43,3 +45,15 @@ class LogoutView(APIView):
         print(user)
         Token.objects.filter(user=user).delete()
         return Response("Successfully logged out", status=status.HTTP_200_OK)
+
+
+class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = MyUser.objects.all()
+    serializer_class = UserSerializer
+
+    def get_serializer_context(self):
+        return {'request': self.request, 'action': self.action}
+
+
+
+

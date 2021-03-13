@@ -9,6 +9,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Comment)
-admin.site.register(Actor)
 admin.site.register(Movie)
+admin.site.register(Like)
+admin.site.register(Favorite)
 admin.site.register(Genre, GenreAdmin)

@@ -17,8 +17,40 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework.routers import DefaultRouter
+
+from account.views import UserViewSet
+from main.views import GenreViewSet, MovieViewSet, CommentViewSet, LikeViewSet, FavoriteViewSet, RatingViewSet
+
+schema_view = get_schema_view(
+    openapi.Info(
+          title="Snippets API",
+          default_version='v1',
+          description="Test description",
+          terms_of_service="https://www.google.com/policies/terms/",
+          contact=openapi.Contact(email="contact@snippets.local"),
+          license=openapi.License(name="BSD License"),
+       ),
+    public=True,
+)
+
+
+router = DefaultRouter()
+router.register('genres', GenreViewSet)
+router.register('movies', MovieViewSet)
+router.register('comments', CommentViewSet)
+router.register('users', UserViewSet)
+router.register('likes', LikeViewSet)
+router.register('favorites', FavoriteViewSet)
+router.register('ratings', RatingViewSet)
 
 urlpatterns = [
+    path('v1/api/docs/', schema_view.with_ui()),
     path('admin/', admin.site.urls),
-    path('v1/api/accounts/', include('account.urls'))
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('v1/api/', include(router.urls)),
+    path('v1/api/accounts/', include('account.urls')),
+]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

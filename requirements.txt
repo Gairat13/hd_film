@@ -5,3 +5,4 @@ djangorestframework==3.11
 drf-yasg
 python-decouple
 pytils
+drf-action-serializer
