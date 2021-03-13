@@ -11,15 +11,21 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ('title', 'image', 'slug')
 
+    def get_fields(self):
+        fields = super().get_fields()
+        action = self.context.get('action')
+        if action in ['create', 'update']:
+            fields.pop('slug')
+        return fields
+
     def create(self, validated_data):
         genre = Genre.objects.create(**validated_data)
         return genre
 
     def update(self, instance, validated_data):
-        obj = Genre.objects.get(title=instance)
-        if obj:
-            obj.delete()
-        instance = Genre.objects.create(**validated_data)
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+        instance.save()
         return instance
 
 
@@ -54,7 +60,7 @@ class MovieSerializer(serializers.ModelSerializer):
     def get_fields(self):
         action = self.context.get('action')
         fields = super().get_fields()
-        if action == 'list':
+        if action == 'list' or action == 'search':
             fields.pop('images')
             fields.pop('created')
             fields.pop('description')
@@ -90,12 +96,12 @@ class MovieSerializer(serializers.ModelSerializer):
         rating = instance.ratings.all().aggregate(Avg('rating')).get('rating__avg')
         like = LikeSerializer(instance.likes.filter(like=True), many=True, context=self.context).data
         comment = CommentSerializer(instance.comments.all(), many=True,
-                                                           context=self.context).data
+                                    context=self.context).data
         representation['like'] = len(like)
         representation['comment'] = len(comment)
-        representation['rating'] = rating
+        representation['rating'] = rating if rating != None else 0
 
-        if action != 'detail':
+        if action == 'detail':
             representation['images'] = ImageSerializer(instance.images.all(), many=True, context=self.context).data
             representation['genre'] = GenreSerializer(instance.genre).data
             representation['rating'] = RatingSerializer(instance.ratings.all(), many=True, context=self.context).data
@@ -190,7 +196,7 @@ class RatingSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         rating = attrs.get('rating')
         if rating > 5:
-            raise ValueError('The value must not exceed 5')
+            raise serializers.ValidationError('The value must not exceed 5')
         return attrs
 
     def get_fields(self):
@@ -209,4 +215,3 @@ class RatingSerializer(serializers.ModelSerializer):
         rating.rating = rat
         rating.save()
         return rating
-
