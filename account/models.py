@@ -54,3 +54,4 @@ class MyUser(AbstractUser):
         if MyUser.objects.filter(activation_code=activation_code).exists():
             self.create_activation_code()
         self.activation_code = activation_code
+

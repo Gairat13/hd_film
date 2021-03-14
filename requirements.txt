@@ -6,3 +6,5 @@ drf-yasg
 python-decouple
 pytils
 drf-action-serializer
+celery
+redis

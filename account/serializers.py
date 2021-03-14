@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
+from account.tasks import send_activation_code
 
-from account.utils import send_activation_code
 from main.serializers import FavoriteSerializer, LikeSerializer
 
 MyUser = get_user_model()
@@ -27,7 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         username = validate_data.get('username')
         password = validate_data.get('password')
         user = MyUser.objects.create_user(email=email, username=username, password=password)
-        send_activation_code(email=user.email, activation_code=user.activation_code)
+        send_activation_code.delay(email=str(user.email), activation_code=str(user.activation_code))
         return user
 
 
@@ -61,10 +61,10 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         action = self.context.get('action')
-        print(action)
-        if action != 'list':
+        if action == 'retrieve':
             representation['favorites'] = FavoriteSerializer(instance.favorites.filter(favorite=True),
                                                              many=True, context=self.context).data
             representation['likes'] = LikeSerializer(instance.likes.filter(like=True),
                                                      many=True, context=self.context).data
         return representation
+

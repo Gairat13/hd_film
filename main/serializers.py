@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.models import Genre, Movie, MovieImage, Comment, Like, Favorite, Rating
-from django.db.models import Avg
+from django.db.models import Avg, Q
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -27,6 +27,14 @@ class GenreSerializer(serializers.ModelSerializer):
             setattr(instance, k, v)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        representation = super(GenreSerializer, self).to_representation(instance)
+        action = self.context.get('action')
+        if action == 'retrieve':
+            representation['movies'] = MovieSerializer(instance.movies.all(),
+                                                       many=True, context=self.context).data
+        return representation
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -97,13 +105,18 @@ class MovieSerializer(serializers.ModelSerializer):
         like = LikeSerializer(instance.likes.filter(like=True), many=True, context=self.context).data
         comment = CommentSerializer(instance.comments.all(), many=True,
                                     context=self.context).data
-        representation['like'] = len(like)
-        representation['comment'] = len(comment)
-        representation['rating'] = rating if rating != None else 0
+        if action == 'list':
+            representation['like'] = len(like)
+            representation['comment'] = len(comment)
+            representation['rating'] = rating if rating is not None else 0
 
-        if action == 'detail':
+        if action == 'retrieve':
             representation['images'] = ImageSerializer(instance.images.all(), many=True, context=self.context).data
             representation['genre'] = GenreSerializer(instance.genre).data
+            representation['recommendation'] = MovieSerializer(Movie.objects.exclude(title=instance.title).
+                                                               filter(Q(title__icontains=instance.title) |
+                                                                      Q(description__icontains=instance.title)),
+                                                               many=True, context=self.context).data
             representation['rating'] = RatingSerializer(instance.ratings.all(), many=True, context=self.context).data
             representation['comments'] = comment
             representation['like'] = like

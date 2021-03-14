@@ -19,6 +19,9 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = [IsAuthenticated, IsAdminPermission]
 
+    def get_serializer_context(self):
+        return {'request': self.request, 'action': self.action}
+
 
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
