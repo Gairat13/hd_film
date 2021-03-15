@@ -86,6 +86,7 @@ class RatingViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.Gen
     serializer_class = RatingSerializer
     permission_classes = [IsAuthenticated, ]
 
-
     def get_serializer_context(self):
         return {'request': self.request, 'action': self.action}
+
+

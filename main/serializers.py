@@ -108,9 +108,10 @@ class MovieSerializer(serializers.ModelSerializer):
         if action == 'list':
             representation['like'] = len(like)
             representation['comment'] = len(comment)
-            representation['rating'] = rating if rating is not None else 0
+            representation['rating'] = round(rating, 1) if rating is not None else 0
 
         if action == 'retrieve':
+            self.context['action'] = 'list'
             representation['images'] = ImageSerializer(instance.images.all(), many=True, context=self.context).data
             representation['genre'] = GenreSerializer(instance.genre).data
             representation['recommendation'] = MovieSerializer(Movie.objects.exclude(title=instance.title).
@@ -173,7 +174,7 @@ class LikeSerializer(serializers.ModelSerializer):
         user = request.user
         movie = validated_data.get('movie')
         like = Like.objects.get_or_create(user=user, movie=movie)[0]
-        like.like = True if like.like == False else False
+        like.like = True if like.like is False else False
         like.save()
         return like
 
@@ -228,3 +229,6 @@ class RatingSerializer(serializers.ModelSerializer):
         rating.rating = rat
         rating.save()
         return rating
+
+
+

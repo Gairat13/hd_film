@@ -35,10 +35,10 @@ schema_view = get_schema_view(
 
 
 router = DefaultRouter()
+router.register('users', UserViewSet)
 router.register('genres', GenreViewSet)
 router.register('movies', MovieViewSet)
 router.register('comments', CommentViewSet)
-router.register('users', UserViewSet)
 router.register('likes', LikeViewSet)
 router.register('favorites', FavoriteViewSet)
 router.register('ratings', RatingViewSet)
