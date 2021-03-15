@@ -7,11 +7,13 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from main.models import Genre, Movie, Comment, Like, Favorite, Rating
+from main.parsing import pars
 from main.permissions import IsAuthorPermission, IsAdminPermission
 from main.serializers import GenreSerializer, MovieSerializer, CommentSerializer, LikeSerializer, FavoriteSerializer, \
-    RatingSerializer
+    RatingSerializer, ParsSerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -90,3 +92,11 @@ class RatingViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.Gen
         return {'request': self.request, 'action': self.action}
 
 
+class ParsOcView(APIView):
+    def get(self, request):
+        dict_ = pars()
+        serializer = ParsSerializer(instance=dict_, many=True)
+        return Response(serializer.data)
+
+    # def get_serializer_context(self):
+    #     return {'request': self.request, 'action': self.action}

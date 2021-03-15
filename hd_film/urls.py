@@ -22,7 +22,8 @@ from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
 
 from account.views import UserViewSet
-from main.views import GenreViewSet, MovieViewSet, CommentViewSet, LikeViewSet, FavoriteViewSet, RatingViewSet
+from main.views import GenreViewSet, MovieViewSet, CommentViewSet, LikeViewSet, FavoriteViewSet, RatingViewSet, \
+    ParsOcView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -48,6 +49,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('v1/api/', include(router.urls)),
     path('v1/api/accounts/', include('account.urls')),
+    path('v1/api/pars/', ParsOcView.as_view())
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

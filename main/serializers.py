@@ -231,4 +231,38 @@ class RatingSerializer(serializers.ModelSerializer):
         return rating
 
 
+class ParsSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255)
+    photo = serializers.CharField(max_length=255)
+
+    # def get_fields(self):
+    #     fields = super().get_fields()
+    #     # list_ = main()
+    #     # for dict_ in list_:
+    #     #     print(dict_)
+    #     action = self.context.get('action')
+    #     if action == 'create':
+    #         fields.pop('title')
+    #         fields.pop('photo')
+    #     return fields
+
+    # def create(self, validated_data):
+    #     list_ = pars()
+    #     ins = ''
+    #     for dict_ in list_:
+    #         title = dict_.get('title')
+    #         photo = dict_.get('photo')
+    #         ins = ParsOc.objects.get_or_create(title=title, photo=photo)
+    #     return ins
+    #
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['posters'] = ParsSerializer(ParsOc.objects.all(), many=True, context=self.context).data
+    #     return representation
+    #
+
+
+
+
+
 

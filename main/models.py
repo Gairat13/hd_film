@@ -72,3 +72,4 @@ class Rating(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='ratings')
     rating = models.PositiveSmallIntegerField(default=0)
 
+
