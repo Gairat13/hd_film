@@ -73,3 +73,7 @@ class Rating(models.Model):
     rating = models.PositiveSmallIntegerField(default=0)
 
 
+class History(models.Model):
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='histories')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='histories')
+    created = models.DateTimeField(auto_now_add=True, blank=True)

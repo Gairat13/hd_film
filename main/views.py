@@ -1,19 +1,16 @@
-# from django.shortcuts import render
-#
-# # Create your views here.
 from django.db.models import Q
-from django.views import generic
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from main.models import Genre, Movie, Comment, Like, Favorite, Rating
+from main.models import Genre, Movie, Comment, Like, Favorite, Rating, History
 from main.parsing import pars
 from main.permissions import IsAuthorPermission, IsAdminPermission
 from main.serializers import GenreSerializer, MovieSerializer, CommentSerializer, LikeSerializer, FavoriteSerializer, \
-    RatingSerializer, ParsSerializer
+    RatingSerializer, ParsSerializer, HistorySerializer
+from main.utils import add_to_history
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -33,12 +30,20 @@ class MovieViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy', 'create']:
             permissions = [IsAuthenticated, IsAdminPermission, ]
+        elif self.action == 'retrieve':
+            permissions = [IsAuthenticated]
         else:
-            permissions = [AllowAny]
+            permissions = [AllowAny, ]
         return [permission() for permission in permissions]
 
     def get_serializer_context(self):
         return {'request': self.request, 'action': self.action}
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        add_to_history(object=instance, request=request)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'])  # router build path post/search/?q=paris
     def search(self, request, pk=None):
@@ -98,5 +103,11 @@ class ParsOcView(APIView):
         serializer = ParsSerializer(instance=dict_, many=True)
         return Response(serializer.data)
 
-    # def get_serializer_context(self):
-    #     return {'request': self.request, 'action': self.action}
+
+class ViewHistory(APIView):
+    def get(self, request):
+        user = request.user
+        history = History.objects.filter(user=user).order_by('-created')
+        serializer = HistorySerializer(instance=history, many=True)
+        return Response(serializer.data)
+

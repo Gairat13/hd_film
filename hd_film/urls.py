@@ -23,7 +23,7 @@ from rest_framework.routers import DefaultRouter
 
 from account.views import UserViewSet
 from main.views import GenreViewSet, MovieViewSet, CommentViewSet, LikeViewSet, FavoriteViewSet, RatingViewSet, \
-    ParsOcView
+    ParsOcView, ViewHistory
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -47,9 +47,10 @@ router.register('ratings', RatingViewSet)
 urlpatterns = [
     path('v1/api/docs/', schema_view.with_ui()),
     path('admin/', admin.site.urls),
+    path('v1/api/pars/', ParsOcView.as_view()),
+    path('v1/api/history/', ViewHistory.as_view()),
     path('v1/api/', include(router.urls)),
     path('v1/api/accounts/', include('account.urls')),
-    path('v1/api/pars/', ParsOcView.as_view())
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
