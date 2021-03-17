@@ -32,6 +32,7 @@ class GenreSerializer(serializers.ModelSerializer):
         representation = super(GenreSerializer, self).to_representation(instance)
         action = self.context.get('action')
         if action == 'retrieve':
+            self.context['action'] = 'list'
             representation['movies'] = MovieSerializer(instance.movies.all(),
                                                        many=True, context=self.context).data
         return representation
@@ -115,8 +116,7 @@ class MovieSerializer(serializers.ModelSerializer):
             representation['images'] = ImageSerializer(instance.images.all(), many=True, context=self.context).data
             representation['genre'] = GenreSerializer(instance.genre).data
             representation['recommendation'] = MovieSerializer(Movie.objects.exclude(title=instance.title).
-                                                               filter(Q(title__icontains=instance.title) |
-                                                                      Q(description__icontains=instance.title)),
+                                                               filter(genre=instance.genre),
                                                                many=True, context=self.context).data
             representation['rating'] = RatingSerializer(instance.ratings.all(), many=True, context=self.context).data
             representation['comments'] = comment
@@ -240,9 +240,5 @@ class HistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = History
         fields = '__all__'
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        return representation
 
 

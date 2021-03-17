@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 from account.tasks import send_activation_code
 
-from main.serializers import FavoriteSerializer, LikeSerializer
+from main.serializers import FavoriteSerializer, LikeSerializer, HistorySerializer
 
 MyUser = get_user_model()
 
@@ -66,5 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
                                                              many=True, context=self.context).data
             representation['likes'] = LikeSerializer(instance.likes.filter(like=True),
                                                      many=True, context=self.context).data
+            self.context['action'] = action
+            representation['history'] = HistorySerializer(instance.histories.all(), many=True, context=self.context).data
         return representation
 

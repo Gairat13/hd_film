@@ -16,7 +16,14 @@ from main.utils import add_to_history
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAuthenticated, IsAdminPermission]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy', 'create']:
+            permissions = [IsAuthenticated, IsAdminPermission, ]
+        else:
+            permissions = [AllowAny, ]
+        return [permission() for permission in permissions]
 
     def get_serializer_context(self):
         return {'request': self.request, 'action': self.action}
